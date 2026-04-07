@@ -124,4 +124,4 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 
 ## 6. Realizarea diagramei entitate-relație
 
-![ER Diagram](resurse/drawio/diagrama_er.drawio.png)
+![ER Diagram](resurse/drawio/diagrama_er.png)
