@@ -13,8 +13,8 @@ Această bază de date are rolul de a modela organizat toate aceste activități
 importante să poată fi stocate, actualizate și interogate ușor. Prin intermediul acestei baze de date se 
 pot urmări elemente esențiale din funcționarea stației, cum ar fi: ce tipuri de carburant sunt disponibile, 
 la ce pompe se realizează alimentările, prin ce pistol de pompă se face o alimentare, ce produse se vând în
-magazin, ce bonuri fiscale au fost emise, ce angajați lucrează în anumite ture, ce aprovizionări de produse
-au fost făcute de la furnizori și ce livrări de carburant au fost primite de stație.
+magazin, ce bonuri fiscale au fost emise, ce angajați sunt programați în anumite ture, ce aprovizionări de 
+produse au fost făcute de la furnizori și ce livrări de carburant au fost primite de stație.
 
 Utilitatea modelului este una practică și clară. În primul rând, acesta permite organizarea activității 
 comerciale a stației, prin evidența alimentărilor și a vânzărilor de produse. În al doilea rând, permite 
@@ -36,13 +36,14 @@ informații despre client, pompă, pistolul folosit, tipul de carburant, bonul f
    
 Stația funcționează cu ajutorul angajaților, care lucrează în ture și au responsabilități diferite. Entitatea 
 ANGAJAT este tratată ca superentitate, având ca subentități CASIER, OPERATOR_POMPA și RESPONSABIL_STOC. 
-Astfel, modelul surprinde faptul că nu toți angajații au aceleași atribuții. Tot în activitatea internă intră 
+Astfel, modelul surprinde faptul că nu toți angajații au aceleași atribuții. Relația dintre ANGAJAT și TURA
+este gestionată prin entitatea asociativă PROGRAMARE_TURA. Tot în activitatea internă intră 
 și aprovizionarea stației de la diverși furnizori, pentru produsele din magazin, precum și livrările de 
 carburant asociate stației, furnizorului și tipului de carburant.
 
 Entitățile bazei de date:
 1. [STAȚIE](#entitatea-stație) - Reține informațiile despre benzinărie;
-2. [TIP_CARBURANT](#entitatea-tip-carburant) - Tipruile de carburant vândute;
+2. [TIP_CARBURANT](#entitatea-tip-carburant) - Tipurile de carburant vândute;
 3. [POMPA](#entitatea-pompa) - Pompele de alimentare;
 4. [PISTOL_POMPA](#entitatea-pistol-pompa) - Pistoalele asociate pompelor, fiecare corespunzând unui tip de carburant;
 5. [CLIENT](#entitatea-client) - Clienții care alimentează și cumpără produse;
@@ -51,14 +52,15 @@ Entitățile bazei de date:
 8. [OPERATOR_POMPA](#entitatea-operator-pompa) - Subentitate pentru angajații care operează pompele;
 9. [RESPONSABIL_STOC](#entitatea-responsabil-stoc) - Subentitate pentru angajații care gestionează stocul magazinului;
 10. [TURĂ](#entitatea-tura) - Reține informații despre turele de lucru ale angajaților;
-11. [BON_FISCAL](#entitatea-bon-fiscal) - Reprezintă bonurile fiscale emise în urma tranzacțiilor;
-12. [ALIMENTARE](#entitatea-alimentare) - Reprezintă operația de alimentare a unui client, realizată printr-un pistol de pompă și asociată unui bon fiscal;
-13. [PRODUS_MAGAZIN](#entitatea-produs-magazin) - Produsele disponibile în magazin;
-14. [ARTICOL_BON](#entitatea-articol-bon) - Tabel asociativ între BON_FISCAL și PRODUS_MAGAZIN pentru a înregistra produsele vândute în magazin;
-15. [FURNIZOR](#entitatea-furnizor) - Furnizorii de carburant și produse;
-16. [APROVIZIONARE](#entitatea-aprovizionare) - Reprezintă intrările de produse în stație de la furnizori;
-17. [ARTICOL_APROV_PRODUS](#entitatea-articol-aprov-produs) - Tabel asociativ între APROVIZIONARE și PRODUS_MAGAZIN pentru a înregistra produsele aprovizionate;
-18. [LIVRARE_CARBURANT](#entitatea-livrare-carburant) - Relație ternară între STAȚIE, FURNIZOR și TIP_CARBURANT, folosită pentru a înregistra livrările de carburant.
+11. [PROGRAMARE_TURA](#entitatea-programare-tura) - Tabel asociativ între ANGAJAT și TURA pentru evidența programărilor în ture;
+12. [BON_FISCAL](#entitatea-bon-fiscal) - Reprezintă bonurile fiscale emise în urma tranzacțiilor;
+13. [ALIMENTARE](#entitatea-alimentare) - Reprezintă operația de alimentare a unui client, realizată printr-un pistol de pompă și asociată unui bon fiscal;
+14. [PRODUS_MAGAZIN](#entitatea-produs-magazin) - Produsele disponibile în magazin;
+15. [ARTICOL_BON](#entitatea-articol-bon) - Tabel asociativ între BON_FISCAL și PRODUS_MAGAZIN pentru a înregistra produsele vândute în magazin;
+16. [FURNIZOR](#entitatea-furnizor) - Furnizorii de carburant și produse;
+17. [APROVIZIONARE](#entitatea-aprovizionare) - Reprezintă intrările de produse în stație de la furnizori;
+18. [ARTICOL_APROV_PRODUS](#entitatea-articol-aprov-produs) - Tabel asociativ între APROVIZIONARE și PRODUS_MAGAZIN pentru a înregistra produsele aprovizionate;
+19. [LIVRARE_CARBURANT](#entitatea-livrare-carburant) - Entitate asociativă provenită din relația ternară dintre STAȚIE, FURNIZOR și TIP_CARBURANT, folosită pentru a înregistra livrările de carburant.
 
 ## 2. Prezentarea constrângerilor (restricții, reguli) impuse asupra modelului
 
@@ -83,6 +85,9 @@ Un bon fiscal poate conține mai multe produse din magazin, iar un produs poate 
 O alimentare este realizată printr-un singur pistol de pompă și este asociată unui singur bon fiscal.
 -- cardinalități
 
+Un bon fiscal poate avea cel mult o alimentare.
+-- cardinalități
+
 Un furnizor poate realiza mai multe aprovizionări, dar o aprovizionare provine de la un singur furnizor.
 -- cardinalități
 
@@ -96,7 +101,7 @@ Un furnizor poate realiza mai multe livrări de carburant, o stație poate primi
 -- cardinalități
 
 Un angajat poate lucra în mai multe ture, iar într-o tură pot lucra mai mulți angajați.
--- cardinalități
+-- cardinalități; relație de tip many-to-many, rezolvată prin PROGRAMARE_TURA
 
 Un casier, un operator pompă sau un responsabil stoc trebuie să existe mai întâi ca angajat.
 -- relația dintre superentitate și subentități
@@ -124,4 +129,8 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 
 ## 6. Realizarea diagramei entitate-relație
 
-![ER Diagram](resurse/drawio/diagrama_er.png)
+![ER Diagram](resurse/diagrama_er.png)
+
+## 7. Realizarea diagramei conceptuale
+
+![Diagrama conceptuală](resurse/diagrama_conceptuala.png)
