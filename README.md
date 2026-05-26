@@ -43,24 +43,24 @@ carburant asociate stației, furnizorului și tipului de carburant.
 
 Entitățile bazei de date:
 1. [STAȚIE](#entitatea-stație) - Reține informațiile despre benzinărie;
-2. [TIP_CARBURANT](#entitatea-tip-carburant) - Tipurile de carburant vândute;
+2. [TIP_CARBURANT](#entitatea-tip_carburant) - Tipurile de carburant vândute;
 3. [POMPA](#entitatea-pompa) - Pompele de alimentare;
-4. [PISTOL_POMPA](#entitatea-pistol-pompa) - Pistoalele asociate pompelor, fiecare corespunzând unui tip de carburant;
+4. [PISTOL_POMPA](#entitatea-pistol_pompa) - Pistoalele asociate pompelor, fiecare corespunzând unui tip de carburant;
 5. [CLIENT](#entitatea-client) - Clienții care alimentează și cumpără produse;
 6. [ANGAJAT](#entitatea-angajat) - Superentitate pentru toți angajații stației;
 7. [CASIER](#entitatea-casier) - Subentitate pentru angajații care lucrează la casă;
-8. [OPERATOR_POMPA](#entitatea-operator-pompa) - Subentitate pentru angajații care operează pompele;
-9. [RESPONSABIL_STOC](#entitatea-responsabil-stoc) - Subentitate pentru angajații care gestionează stocul magazinului;
+8. [OPERATOR_POMPA](#entitatea-operator_pompa) - Subentitate pentru angajații care operează pompele;
+9. [RESPONSABIL_STOC](#entitatea-responsabil_stoc) - Subentitate pentru angajații care gestionează stocul magazinului;
 10. [TURĂ](#entitatea-tura) - Reține informații despre turele de lucru ale angajaților;
-11. [PROGRAMARE_TURA](#entitatea-programare-tura) - Tabel asociativ între ANGAJAT și TURA pentru evidența programărilor în ture;
-12. [BON_FISCAL](#entitatea-bon-fiscal) - Reprezintă bonurile fiscale emise în urma tranzacțiilor;
+11. [PROGRAMARE_TURA](#entitatea-programare_tura) - Tabel asociativ între ANGAJAT și TURA pentru evidența programărilor în ture;
+12. [BON_FISCAL](#entitatea-bon_fiscal) - Reprezintă bonurile fiscale emise în urma tranzacțiilor;
 13. [ALIMENTARE](#entitatea-alimentare) - Reprezintă operația de alimentare a unui client, realizată printr-un pistol de pompă și asociată unui bon fiscal;
-14. [PRODUS_MAGAZIN](#entitatea-produs-magazin) - Produsele disponibile în magazin;
-15. [ARTICOL_BON](#entitatea-articol-bon) - Tabel asociativ între BON_FISCAL și PRODUS_MAGAZIN pentru a înregistra produsele vândute în magazin;
+14. [PRODUS_MAGAZIN](#entitatea-produs_magazin) - Produsele disponibile în magazin;
+15. [ARTICOL_BON](#entitatea-articol_bon) - Tabel asociativ între BON_FISCAL și PRODUS_MAGAZIN pentru a înregistra produsele vândute în magazin;
 16. [FURNIZOR](#entitatea-furnizor) - Furnizorii de carburant și produse;
 17. [APROVIZIONARE](#entitatea-aprovizionare) - Reprezintă intrările de produse în stație de la furnizori;
-18. [ARTICOL_APROV_PRODUS](#entitatea-articol-aprov-produs) - Tabel asociativ între APROVIZIONARE și PRODUS_MAGAZIN pentru a înregistra produsele aprovizionate;
-19. [LIVRARE_CARBURANT](#entitatea-livrare-carburant) - Entitate asociativă provenită din relația ternară dintre STAȚIE, FURNIZOR și TIP_CARBURANT, folosită pentru a înregistra livrările de carburant.
+18. [ARTICOL_APROV_PRODUS](#entitatea-articol_aprov_produs) - Tabel asociativ între APROVIZIONARE și PRODUS_MAGAZIN pentru a înregistra produsele aprovizionate;
+19. [LIVRARE_CARBURANT](#entitatea-livrare_carburant) - Entitate asociativă provenită din relația ternară dintre STAȚIE, FURNIZOR și TIP_CARBURANT, folosită pentru a înregistra livrările de carburant.
 
 ## 2. Prezentarea constrângerilor (restricții, reguli) impuse asupra modelului
 
