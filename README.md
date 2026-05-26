@@ -256,6 +256,182 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 | **este**: ANGAJAT – RESPONSABIL_STOC | angajat – responsabil_stoc: **one-to-zero-or-one** | Relație superentitate–subentitate. Fiecare responsabil de stoc trebuie să existe mai întâi ca angajat. Un angajat poate fi sau nu responsabil stoc. |
 
 
+## 5. Descrierea atributelor, incluzând tipul de date și eventualele constrângeri, valori implicite, valori posibile ale atributelor
+
+### STAȚIE
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_statie | NUMBER(10) | PK | 1, 2, 3 | seq_statie.NEXTVAL | Identifică unic stația. Valoarea este generată automat cu secvență. |
+| denumire | VARCHAR2(100) | NOT NULL | 'OMV Militari', 'Petrom Vest' | - | Numele stației. |
+| adresa | VARCHAR2(150) | NOT NULL | 'Str. Mihai Eminescu nr. 10' | - | Adresa stației. |
+| oras | VARCHAR2(50) | NOT NULL | 'Bucuresti', 'Ploiesti' | - | Orașul în care se află stația. |
+| telefon | VARCHAR2(15) | - | '0712345678' | - | Număr de contact al stației. |
+
+### TIP_CARBURANT
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_tip_carburant | NUMBER(10) | PK | 1, 2, 3 | seq_tip_carburant.NEXTVAL | Identifică unic tipul de carburant. Valoarea este generată automat cu secvență. |
+| denumire | VARCHAR2(50) | NOT NULL, UNIQUE | 'Benzina 95', 'Motorina', 'GPL' | - | Denumirea carburantului. |
+| pret_litru | NUMBER(6,2) | NOT NULL, CHECK (pret_litru > 0) | 7.25, 7.60 | - | Prețul curent pe litru. |
+
+### POMPA
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_pompa | NUMBER(10) | PK | 1, 2, 3 | seq_pompa.NEXTVAL | Identifică unic pompa. Valoarea este generată automat cu secvență. |
+| id_statie | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela STATIE. |
+| numar_pompa | NUMBER(3) | NOT NULL | 1, 2, 3 | - | Numărul fizic al pompei în stație. |
+| stare | VARCHAR2(20) | NOT NULL, CHECK (stare IN ('functionala', 'defecta', 'revizie')) | 'functionala', 'defecta', 'revizie' | 'functionala' | Starea curentă a pompei. |
+
+### PISTOL_POMPA
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_pistol_pompa | NUMBER(10) | PK | 1, 2, 3 | seq_pistol_pompa.NEXTVAL | Identifică unic pistolul de pompă. Valoarea este generată automat cu secvență. |
+| id_pompa | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela POMPA. |
+| id_tip_carburant | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela TIP_CARBURANT. |
+| numar_pistol | NUMBER(2) | NOT NULL | 1, 2, 3 | - | Numărul pistolului din cadrul pompei. |
+| stare | VARCHAR2(20) | NOT NULL, CHECK (stare IN ('functional', 'defect')) | 'functional', 'defect' | 'functional' | Starea pistolului de pompă. |
+
+### CLIENT
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_client | NUMBER(10) | PK | 1, 2, 3 | seq_client.NEXTVAL | Identifică unic clientul. Valoarea este generată automat cu secvență. |
+| nume | VARCHAR2(50) | NOT NULL | 'Popescu', 'Ionescu' | - | Numele clientului. |
+| prenume | VARCHAR2(50) | NOT NULL | 'Andrei', 'Maria' | - | Prenumele clientului. |
+| telefon | VARCHAR2(15) | - | '0712345678' | - | Numărul de telefon al clientului. |
+
+### ANGAJAT
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_angajat | NUMBER(10) | PK | 1, 2, 3 | seq_angajat.NEXTVAL | Identifică unic angajatul. Valoarea este generată automat cu secvență. |
+| id_statie | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela STATIE. |
+| nume | VARCHAR2(50) | NOT NULL | 'Dumitrescu', 'Stan' | - | Numele angajatului. |
+| prenume | VARCHAR2(50) | NOT NULL | 'Alexandru', 'Ioana' | - | Prenumele angajatului. |
+| telefon | VARCHAR2(15) | - | '0700000000' | - | Numărul de telefon al angajatului. |
+| salariu | NUMBER(8,2) | CHECK (salariu > 0) | 3500.00, 4200.00 | - | Salariul angajatului. |
+| data_angajare | DATE | NOT NULL | DATE '2024-03-15' | SYSDATE | Data angajării. |
+
+### CASIER
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_angajat | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela ANGAJAT.  |
+| numar_casa | NUMBER(2) | NOT NULL | 1, 2 | - | Casa de marcat la care lucrează casierul. |
+
+### OPERATOR_POMPA
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_angajat | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela ANGAJAT. |
+| zona_responsabilitate | VARCHAR2(50) | - | 'pompe 1-3', 'pompe 4-6' | - | Zona de lucru a operatorului. |
+
+### RESPONSABIL_STOC
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_angajat | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela ANGAJAT. |
+| sector_stoc | VARCHAR2(50) | - | 'magazin', 'depozit' | 'magazin' | Sectorul gestionat de responsabilul de stoc. |
+
+### TURA
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_tura | NUMBER(10) | PK | 1, 2, 3 | seq_tura.NEXTVAL | Identifică unic tura. Valoarea este generată automat cu secvență. |
+| denumire | VARCHAR2(30) | NOT NULL | 'dimineata', 'dupa-amiaza', 'noapte' | - | Denumirea turei. |
+| ora_inceput | VARCHAR2(5) | NOT NULL | '06:00', '14:00', '22:00' | - | Ora de început, în format HH24:MI. |
+| ora_sfarsit | VARCHAR2(5) | NOT NULL | '14:00', '22:00', '06:00' | - | Ora de final, în format HH24:MI. |
+
+### PROGRAMARE_TURA
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_angajat | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela ANGAJAT. Face parte din cheia primară compusă. |
+| id_tura | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela TURA. Face parte din cheia primară compusă. |
+| data_programare | DATE | NOT NULL | DATE '2025-05-20' | - | Data la care angajatul este programat în tura respectivă. |
+
+### BON_FISCAL
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_bon | NUMBER(10) | PK | 1, 2, 3 | seq_bon_fiscal.NEXTVAL | Identifică unic bonul fiscal. Valoarea este generată automat cu secvență. |
+| id_client | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela CLIENT. |
+| data_bon | DATE | NOT NULL | DATE '2025-05-20' | SYSDATE | Data și ora emiterii bonului. |
+| metoda_plata | VARCHAR2(20) | NOT NULL, CHECK (metoda_plata IN ('cash', 'card')) | 'cash', 'card' | 'card' | Metoda de plată folosită. |
+
+### ALIMENTARE
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_alimentare | NUMBER(10) | PK | 1, 2, 3 | seq_alimentare.NEXTVAL | Identifică unic alimentarea. Valoarea este generată automat cu secvență. |
+| id_pistol_pompa | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela PISTOL_POMPA. |
+| id_bon | NUMBER(10) | FK, NOT NULL, UNIQUE | 1, 2 | - | Referință către tabela BON_FISCAL. Un bon poate avea cel mult o alimentare. |
+| cantitate_litri | NUMBER(8,2) | NOT NULL, CHECK (cantitate_litri > 0) | 25.50, 40.00 | - | Cantitatea alimentată. |
+| pret_litru | NUMBER(6,2) | NOT NULL, CHECK (pret_litru > 0) | 7.25, 7.60 | - | Prețul pe litru la momentul alimentării. |
+
+### PRODUS_MAGAZIN
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_produs_magazin | NUMBER(10) | PK | 1, 2, 3 | seq_produs_magazin.NEXTVAL | Identifică unic produsul din magazin. Valoarea este generată automat cu secvență. |
+| denumire | VARCHAR2(100) | NOT NULL | 'Apa plata', 'Cafea', 'Sandvis' | - | Denumirea produsului. |
+| categorie | VARCHAR2(50) | - | 'bautura', 'aliment', 'auto' | - | Categoria produsului. |
+| pret | NUMBER(7,2) | NOT NULL, CHECK (pret > 0) | 5.50, 12.00 | - | Prețul de vânzare al produsului. |
+| stoc | NUMBER(6) | NOT NULL, CHECK (stoc >= 0) | 0, 10, 50 | 0 | Numărul de produse disponibile în stoc. |
+
+### ARTICOL_BON
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_bon | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela BON_FISCAL. Face parte din cheia primară compusă. |
+| id_produs_magazin | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela PRODUS_MAGAZIN. Face parte din cheia primară compusă. |
+| cantitate | NUMBER(6) | NOT NULL, CHECK (cantitate > 0) | 1, 2, 5 | 1 | Cantitatea cumpărată din produsul respectiv. |
+| pret_unitar | NUMBER(7,2) | NOT NULL, CHECK (pret_unitar > 0) | 5.50, 12.00 | - | Prețul produsului la momentul vânzării. |
+
+### FURNIZOR
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_furnizor | NUMBER(10) | PK | 1, 2, 3 | seq_furnizor.NEXTVAL | Identifică unic furnizorul. Valoarea este generată automat cu secvență. |
+| denumire | VARCHAR2(100) | NOT NULL | 'Rompetrol Supply', 'Metro' | - | Denumirea furnizorului. |
+| telefon | VARCHAR2(15) | - | '0211234567' | - | Numărul de telefon al furnizorului. |
+| email | VARCHAR2(100) | - | 'contact@furnizor.ro' | - | Adresa de email a furnizorului. |
+
+### APROVIZIONARE
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_aprovizionare | NUMBER(10) | PK | 1, 2, 3 | seq_aprovizionare.NEXTVAL | Identifică unic aprovizionarea. Valoarea este generată automat cu secvență. |
+| id_furnizor | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela FURNIZOR. |
+| data_aprovizionare | DATE | NOT NULL | DATE '2025-05-20' | SYSDATE | Data aprovizionării. |
+| observatii | VARCHAR2(200) | - | 'livrare produse magazin' | - | Detalii suplimentare despre aprovizionare. |
+
+### ARTICOL_APROV_PRODUS
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_aprovizionare | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela APROVIZIONARE. Face parte din cheia primară compusă. |
+| id_produs_magazin | NUMBER(10) | PK, FK | 1, 2, 3 | - | Referință către tabela PRODUS_MAGAZIN. Face parte din cheia primară compusă. |
+| cantitate | NUMBER(6) | NOT NULL, CHECK (cantitate > 0) | 10, 20, 50 | - | Cantitatea aprovizionată. |
+| pret_achizitie | NUMBER(7,2) | NOT NULL, CHECK (pret_achizitie > 0) | 3.20, 8.50 | - | Prețul de achiziție pe unitate. |
+
+### LIVRARE_CARBURANT
+
+| atribut | tip de date | constrângeri | valori posibile/exemple | valori implicite | observații |
+|---|---|---|---|---|---|
+| id_livrare_carburant | NUMBER(10) | PK | 1, 2, 3 | seq_livrare_carburant.NEXTVAL | Identifică unic livrarea de carburant. Valoarea este generată automat cu secvență. |
+| id_statie | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela STATIE. |
+| id_furnizor | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela FURNIZOR. |
+| id_tip_carburant | NUMBER(10) | FK, NOT NULL | 1, 2 | - | Referință către tabela TIP_CARBURANT. |
+| data_livrare | DATE | NOT NULL | DATE '2025-05-20' | SYSDATE | Data livrării de carburant. |
+| cantitate_litri | NUMBER(10,2) | NOT NULL, CHECK (cantitate_litri > 0) | 5000.00, 10000.00 | - | Cantitatea de carburant livrată. |
+| pret_litru | NUMBER(6,2) | NOT NULL, CHECK (pret_litru > 0) | 6.10, 6.45 | - | Prețul pe litru la livrare. |
+
+
 
 ## 6. Realizarea diagramei entitate-relație
 
