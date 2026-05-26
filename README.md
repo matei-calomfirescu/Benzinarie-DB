@@ -440,3 +440,43 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 ## 7. Realizarea diagramei conceptuale
 
 ![Diagrama conceptuală](resurse/diagrama_conceptuala.png)
+
+## 8. Enumerarea schemelor relaționale corespunzătoare diagramei conceptuale proiectate la punctul 7
+
+STATIE(#id_statie, denumire, adresa, oras, telefon)
+
+TIP_CARBURANT(#id_tip_carburant, denumire, pret_litru)
+
+POMPA(#id_pompa, id_statie, numar_pompa, stare)
+
+PISTOL_POMPA(#id_pistol_pompa, id_pompa, id_tip_carburant, numar_pistol, stare)
+
+CLIENT(#id_client, nume, prenume, telefon)
+
+ANGAJAT(#id_angajat, id_statie, nume, prenume, telefon, salariu, data_angajare)
+
+CASIER(#id_angajat, numar_casa)
+
+OPERATOR_POMPA(#id_angajat, zona_responsabilitate)
+
+RESPONSABIL_STOC(#id_angajat, sector_stoc)
+
+TURA(#id_tura, denumire, ora_inceput, ora_sfarsit)
+
+PROGRAMARE_TURA(#id_angajat, #id_tura, data_programare)
+
+BON_FISCAL(#id_bon, id_client, data_bon, metoda_plata)
+
+ALIMENTARE(#id_alimentare, id_pistol_pompa, id_bon, cantitate_litri, pret_litru)
+
+PRODUS_MAGAZIN(#id_produs_magazin, denumire, categorie, pret, stoc)
+
+ARTICOL_BON(#id_bon, #id_produs_magazin, cantitate, pret_unitar)
+
+FURNIZOR(#id_furnizor, denumire, telefon, email)
+
+APROVIZIONARE(#id_aprovizionare, id_furnizor, data_aprovizionare, observatii)
+
+ARTICOL_APROV_PRODUS(#id_aprovizionare, #id_produs_magazin, cantitate, pret_achizitie)
+
+LIVRARE_CARBURANT(#id_livrare_carburant, id_statie, id_furnizor, id_tip_carburant, data_livrare, cantitate_litri, pret_litru)
