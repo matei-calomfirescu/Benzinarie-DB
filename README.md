@@ -235,6 +235,28 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 - Chei externe: id_statie (referință către STAȚIE), id_furnizor (referință către FURNIZOR), id_tip_carburant (referință către TIP_CARBURANT);
 
 
+## 4. Descrierea relațiilor, incluzând precizarea cardinalității acestora
+
+| Relație | Cardinalitate | Observații |
+|---|---|---|
+| **are**: STAȚIE – POMPĂ | stație – pompă: **one-to-many** | O stație poate avea mai multe pompe. Fiecare pompă aparține unei singure stații. |
+| **are**: STAȚIE – ANGAJAT | stație – angajat: **one-to-many** | O stație poate avea mai mulți angajați sau niciunul înregistrat momentan. Fiecare angajat aparține exact stații. |
+| **are**: POMPĂ – PISTOL_POMPĂ | pompă – pistol_pompă: **one-to-many** | O pompă poate avea unul sau mai multe pistoale. Fiecare pistol aparține unei singure pompe. |
+| **distribuie**: TIP_CARBURANT – PISTOL_POMPĂ | tip_carburant – pistol_pompă: **one-to-many** | Un tip de carburant poate fi distribuit prin mai multe pistoale. Fiecare pistol este asociat unui singur tip de carburant. |
+| **are loc la**: PISTOL_POMPĂ – ALIMENTARE | pistol_pompă – alimentare: **one-to-many** | Un pistol poate fi folosit în mai multe alimentări sau în niciuna. Fiecare alimentare se realizează print exact un pistol. |
+| **se trece pe**: BON_FISCAL – ALIMENTARE | bon_fiscal – alimentare: **one-to-zero-or-one** | Un bon fiscal poate avea cel mult o alimentare. Fiecare alimentare este asociată unui singur bon fiscal. |
+| **are**: CLIENT – BON_FISCAL | client – bon_fiscal: **one-to-many** | Un client poate avea mai multe bonuri fiscale sau niciunul. Fiecare bon fiscal aparține unui singur client. |
+| **conține / apare în**: BON_FISCAL – PRODUS_MAGAZIN | bon_fiscal – produs_magazin: **many-to-many** | Relația este rezolvată prin tabelul asociativ **ARTICOL_BON**. Un bon poate conține mai multe produse, iar un produs poate apărea pe mai multe bonuri. |
+| **realizează**: FURNIZOR – APROVIZIONARE | furnizor – aprovizionare: **one-to-many** | Un furnizor poate realiza mai multe aprovizionări sau niciuna. Fiecare aprovizionare provine de la un singur furnizor. |
+| **aprovizionează / conține**: APROVIZIONARE – PRODUS_MAGAZIN | aprovizionare – produs_magazin: **many-to-many** | Relația este rezolvată prin tabelul asociativ **ARTICOL_APROV_PRODUS**. O aprovizionare poate conține mai multe produse, iar un produs poate apărea în mai multe aprovizionări. |
+| **livrare_carburant**: STAȚIE – FURNIZOR – TIP_CARBURANT | stație – furnizor – tip_carburant: **many-to-many-to-many** | Relație ternară, de aritate 3, rezolvată prin entitatea asociativă **LIVRARE_CARBURANT**. O livrare leagă o singură stație, un singur furnizor și un singur tip de carburant. |
+| **lucrează în**: ANGAJAT – TURĂ | angajat – tură: **many-to-many** | Relația este rezolvată prin tabelul asociativ **PROGRAMARE_TURA**. Un angajat poate lucra în mai multe ture, iar într-o tură pot lucra mai mulți angajați. |
+| **este**: ANGAJAT – CASIER | angajat – casier: **one-to-zero-or-one** | Relație superentitate–subentitate. Fiecare casier trebuie să existe mai întâi ca angajat. Un angajat poate fi sau nu casier. |
+| **este**: ANGAJAT – OPERATOR_POMPĂ | angajat – operator_pompă: **one-to-zero-or-one** | Relație superentitate–subentitate. Fiecare operator pompă trebuie să existe mai întâi ca angajat. Un angajat poate fi sau nu operator pompă. |
+| **este**: ANGAJAT – RESPONSABIL_STOC | angajat – responsabil_stoc: **one-to-zero-or-one** | Relație superentitate–subentitate. Fiecare responsabil de stoc trebuie să existe mai întâi ca angajat. Un angajat poate fi sau nu responsabil stoc. |
+
+
+
 ## 6. Realizarea diagramei entitate-relație
 
 ![ER Diagram](resurse/diagrama_er.png)
