@@ -133,125 +133,106 @@ Fiecare alimentare trebuie asociată unui bon fiscal existent.
 
 - Descriere: Reține informațiile despre benzinărie;
 - Cheie primară: id_stație;
-- Atribute: TODO.
 
 ### Entitatea TIP_CARBURANT
 
 - Descriere: Tipurile de carburant vândute;
 - Cheie primară: id_tip_carburant;
-- Atribute: TODO.
 
 ### Entitatea POMPA
 
 - Descriere: Pompele de alimentare;
 - Cheie primară: id_pompa;
 - Cheie externă: id_stație (referință către STAȚIE);
-- Atribute: TODO.
 
 ### Entitatea PISTOL_POMPA
 
 - Descriere: Pistoalele asociate pompelor, fiecare corespunzând unui tip de carburant;
 - Cheie primară: id_pistol_pompa;
 - Chei externe: id_pompa (referință către POMPA), id_tip_carburant (referință către TIP_CARBURANT);
-- Atribute: TODO.
 
 ### Entitatea CLIENT
 
 - Descriere: Clienții care alimentează și cumpără produse;
 - Cheie primară: id_client;
-- Atribute: TODO.
 
 ### Entitatea ANGAJAT
 
 - Descriere: Superentitate pentru toți angajații stației;
 - Cheie primară: id_angajat;
 - Cheie externă: id_stație (referință către STAȚIE);
-- Atribute: TODO.
 
 ### Entitatea CASIER
 
 - Descriere: Subentitate pentru angajații care lucrează la casă;
 - Cheie primară și cheie externă: id_angajat (referință către ANGAJAT);
-- Atribute: TODO.
 
 ### Entitatea OPERATOR_POMPA
 
 - Descriere: Subentitate pentru angajații care operează pompele;
 - Cheie primară și cheie externă: id_angajat (referință către ANGAJAT);
-- Atribute: TODO.
 
 ### Entitatea RESPONSABIL_STOC
 
 - Descriere: Subentitate pentru angajații care gestionează stocul magazinului;
 - Cheie primară și cheie externă: id_angajat (referință către ANGAJAT);
-- Atribute: TODO.
 
 ### Entitatea TURĂ
 
 - Descriere: Reține informații despre turele de lucru ale angajaților;
 - Cheie primară: id_tura;
-- Atribute: TODO.
 
 ### Entitatea PROGRAMARE_TURA
 
 - Descriere: Tabel asociativ între ANGAJAT și TURA pentru evidența programărilor în ture;
 - Cheie primară compusă: (id_angajat, id_tura);
 - Chei externe: id_angajat (referință către ANGAJAT), id_tura (referință către TURĂ);
-- Atribute: TODO.
 
 ### Entitatea BON_FISCAL
 
 - Descriere: Reprezintă bonurile fiscale emise în urma tranzacțiilor;
 - Cheie primară: id_bon;
 - Cheie externă: id_client (referință către CLIENT);
-- Atribute: TODO.
 
 ### Entitatea ALIMENTARE
 
 - Descriere: Reprezintă operația de alimentare a unui client, realizată printr-un pistol de pompă și asociată unui bon fiscal;
 - Cheie primară: id_alimentare;
 - Chei externe: id_pistol_pompa (referință către PISTOL_POMPA), id_bon (referință către BON_FISCAL);
-- Atribute: TODO.
 
 ### Entitatea PRODUS_MAGAZIN
 
 - Descriere: Produsele disponibile în magazin;
 - Cheie primară: id_produs_magazin;
-- Atribute: TODO.
 
 ### Entitatea ARTICOL_BON
 
 - Descriere: Tabel asociativ între BON_FISCAL și PRODUS_MAGAZIN pentru a înregistra produsele vândute în magazin;
 - Cheie primară compusă: (id_bon, id_produs_magazin);
 - Chei externe: id_bon (referință către BON_FISCAL), id_produs_magazin (referință către PRODUS_MAGAZIN);
-- Atribute: TODO.
 
 ### Entitatea FURNIZOR
 
 - Descriere: Furnizorii de carburant și produse;
 - Cheie primară: id_furnizor;
-- Atribute: TODO.
 
 ### Entitatea APROVIZIONARE
 
 - Descriere: Reprezintă intrările de produse în stație de la furnizori;
 - Cheie primară: id_aprovizionare;
 - Cheie externă: id_furnizor (referință către FURNIZOR);
-- Atribute: TODO.
 
 ### Entitatea ARTICOL_APROV_PRODUS
 
 - Descriere: Tabel asociativ între APROVIZIONARE și PRODUS_MAGAZIN pentru a înregistra produsele aprovizionate;
 - Cheie primară compusă: (id_aprovizionare, id_produs_magazin);
 - Chei externe: id_aprovizionare (referință către APROVIZIONARE), id_produs_magazin (referință către PRODUS_MAGAZIN);
-- Atribute: TODO.
 
 ### Entitatea LIVRARE_CARBURANT
 
 - Descriere: Entitate asociativă provenită din relația ternară dintre STAȚIE, FURNIZOR și TIP_CARBURANT, folosită pentru a înregistra livrările de carburant;
 - Cheie primară: id_livrare_carburant;
 - Chei externe: id_statie (referință către STAȚIE), id_furnizor (referință către FURNIZOR), id_tip_carburant (referință către TIP_CARBURANT);
-- Atribute: TODO.
 
 
 ## 6. Realizarea diagramei entitate-relație
