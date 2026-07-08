@@ -700,6 +700,10 @@ ORDER BY
     a.cantitate_litri DESC;
 ```
 
+### Rezultat
+
+![Rezultat 12 #1](resurse/screenshots/12_cereri_complexe_cererea_1.png)
+
 ---
 
 ### Cererea 2
@@ -763,6 +767,10 @@ ORDER BY
     client ASC;
 ```
 
+### Rezultat
+
+![Rezultat 12 #2](resurse/screenshots/12_cereri_complexe_cererea_2.png)
+
 ---
 
 ### Cererea 3
@@ -807,6 +815,10 @@ HAVING SUM(ab.cantitate * ab.pret_unitar) >= (
 ORDER BY
     valoare_totala DESC;
 ```
+
+### Rezultat
+
+![Rezultat 12 #3](resurse/screenshots/12_cereri_complexe_cererea_3.png)
 
 ---
 
@@ -868,6 +880,10 @@ ORDER BY
     UPPER(c.nume),
     INITCAP(c.prenume);
 ```
+
+### Rezultat
+
+![Rezultat 12 #4](resurse/screenshots/12_cereri_complexe_cererea_4.png)
 
 ---
 
@@ -945,6 +961,10 @@ ORDER BY
     tc.denumire;
 ```
 
+### Rezultat
+
+![Rezultat 12 #5](resurse/screenshots/12_cereri_complexe_cererea_5.png)
+
 ## 13. Implementarea a 3 operații de actualizare și de suprimare a datelor utilizând subcereri
 
 ### Operația 1 — Actualizarea prețului curent al carburanților
@@ -966,6 +986,10 @@ WHERE tc.id_tip_carburant IN (
     FROM livrare_carburant lc2
 );
 ```
+
+### Rezultat
+
+![Rezultat cerința 13 #1](resurse/screenshots/13_operatii_actualizare_suprimare_1.png)
 
 ---
 
@@ -998,6 +1022,10 @@ WHERE p.stare = 'functionala'
 );
 ```
 
+### Rezultat
+
+![Rezultat cerința 13 #2](resurse/screenshots/13_operatii_actualizare_suprimare_2.png)
+
 ---
 
 ### Operația 3 — Ștergerea programărilor vechi ale angajaților cu salariu sub medie
@@ -1020,3 +1048,231 @@ AND pt.id_angajat IN (
     )
 );
 ```
+
+### Rezultat
+
+![Rezultat cerința 13 #3](resurse/screenshots/13_operatii_actualizare_suprimare_3.png)
+
+## 14. Crearea unei vizualizări complexe
+
+Să se creeze o vizualizare care afișează alimentările efectuate de clienți, 
+împreună cu bonul fiscal, stația, pompa, pistolul folosit, tipul de carburant, 
+cantitatea alimentată, prețul pe litru și valoarea totală a alimentării.
+
+Vizualizarea este complexă deoarece folosește mai multe tabele, 
+operații de `JOIN`, coloane calculate și o expresie `CASE`.
+
+```sql
+CREATE OR REPLACE VIEW v_alimentari_detaliate AS
+SELECT
+    a.id_alimentare,
+    a.id_bon,
+    bf.id_client,
+    c.nume || ' ' || c.prenume AS client,
+    bf.data_bon,
+    bf.metoda_plata,
+    s.id_statie,
+    s.denumire AS statie,
+    p.id_pompa,
+    p.numar_pompa,
+    pp.id_pistol_pompa,
+    pp.numar_pistol,
+    tc.id_tip_carburant,
+    tc.denumire AS carburant,
+    a.cantitate_litri,
+    a.pret_litru,
+    ROUND(a.cantitate_litri * a.pret_litru, 2) AS valoare_alimentare,
+    CASE
+        WHEN a.cantitate_litri < 20 THEN 'alimentare mica'
+        WHEN a.cantitate_litri BETWEEN 20 AND 40 THEN 'alimentare medie'
+        ELSE 'alimentare mare'
+    END AS categorie_alimentare
+FROM alimentare a
+JOIN bon_fiscal bf
+    ON bf.id_bon = a.id_bon
+JOIN client c
+    ON c.id_client = bf.id_client
+JOIN pistol_pompa pp
+    ON pp.id_pistol_pompa = a.id_pistol_pompa
+JOIN pompa p
+    ON p.id_pompa = pp.id_pompa
+JOIN statie s
+    ON s.id_statie = p.id_statie
+JOIN tip_carburant tc
+    ON tc.id_tip_carburant = pp.id_tip_carburant;
+```
+
+### Verificarea vizualizării
+
+```sql
+SELECT *
+FROM v_alimentari_detaliate;
+```
+
+## Operație LMD permisă
+
+Această operație este permisă deoarece modifică doar o coloană reală din tabela `ALIMENTARE`, 
+iar fiecare rând din vizualizare corespunde unei singure alimentări.
+
+```sql
+UPDATE v_alimentari_detaliate
+SET cantitate_litri = cantitate_litri + 1
+WHERE id_alimentare = 1;
+```
+
+Verificare:
+
+```sql
+SELECT
+    id_alimentare,
+    cantitate_litri,
+    pret_litru,
+    valoare_alimentare
+FROM v_alimentari_detaliate
+WHERE id_alimentare = 1;
+```
+
+## Operație LMD nepermisă
+
+Această operație nu este permisă deoarece `valoare_alimentare` nu este o 
+coloană reală dintr-o tabelă, ci o coloană calculată în vizualizare prin expresia:
+
+```sql
+ROUND(a.cantitate_litri * a.pret_litru, 2)
+```
+
+Operația:
+
+```sql
+UPDATE v_alimentari_detaliate
+SET valoare_alimentare = 300
+WHERE id_alimentare = 1;
+```
+
+Rezultatul așteptat este eroare, deoarece nu se poate modifica direct o coloană calculată dintr-o vizualizare.
+
+### Rezultat
+
+![Rezultat cerința 14 #1](resurse/screenshots/14_vizualizare_complexa_1.png)
+![Rezultat cerința 14 #2](resurse/screenshots/14_vizualizare_complexa_2.png)
+
+
+## 15. Cereri SQL cu outer-join, division și analiză top-n
+
+### Cererea 1 — Outer-join pe minimum 4 tabele
+
+Să se afișeze toate stațiile și angajații acestora, împreună cu programarea în tură și casa de marcat, 
+dacă angajatul este casier. Se vor afișa și stațiile fără angajați, angajații fără programare și 
+angajații care nu sunt casieri.
+
+**Elemente utilizate:**
+
+* operația `LEFT JOIN`;
+* outer-join pe minimum 4 tabele;
+* tabele folosite: `STATIE`, `ANGAJAT`, `PROGRAMARE_TURA`, `TURA`, `CASIER`.
+
+```sql
+SELECT
+    s.id_statie,
+    s.denumire AS statie,
+    a.id_angajat,
+    a.nume || ' ' || a.prenume AS angajat,
+    NVL(t.denumire, 'fara tura') AS tura,
+    pt.data_programare,
+    NVL(TO_CHAR(ca.numar_casa), 'nu este casier') AS casa_de_marcat
+FROM statie s
+LEFT JOIN angajat a
+    ON a.id_statie = s.id_statie
+LEFT JOIN programare_tura pt
+    ON pt.id_angajat = a.id_angajat
+LEFT JOIN tura t
+    ON t.id_tura = pt.id_tura
+LEFT JOIN casier ca
+    ON ca.id_angajat = a.id_angajat
+ORDER BY
+    s.denumire,
+    a.nume,
+    a.prenume;
+```
+
+### Rezultat
+
+![Rezultat cerința 15 #1](resurse/screenshots/15_outer_division_topn_1.png)
+
+---
+
+### Cererea 2 — Division
+
+Să se afișeze tipurile de carburant care au fost livrate de toți furnizorii care au efectuat cel puțin o livrare de carburant.
+
+**Elemente utilizate:**
+
+* operația division;
+* implementare prin dublu `NOT EXISTS`;
+* tabele folosite: `TIP_CARBURANT`, `LIVRARE_CARBURANT`.
+
+```sql
+SELECT
+    tc.id_tip_carburant,
+    tc.denumire AS carburant
+FROM tip_carburant tc
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM (
+        SELECT DISTINCT id_furnizor
+        FROM livrare_carburant
+    ) f_carburant
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM livrare_carburant lc
+        WHERE lc.id_tip_carburant = tc.id_tip_carburant
+          AND lc.id_furnizor = f_carburant.id_furnizor
+    )
+)
+ORDER BY
+    tc.denumire;
+```
+
+### Rezultat
+
+![Rezultat cerința 15 #2](resurse/screenshots/15_outer_division_topn_2.png)
+
+---
+
+### Cererea 3 — Analiză top-n
+
+Să se afișeze primele 3 produse din magazin după valoarea totală a vânzărilor.
+
+**Elemente utilizate:**
+
+* analiză top-n;
+* subcerere ordonată;
+* filtrare cu `ROWNUM`;
+* funcții grup: `SUM`;
+* tabele folosite: `PRODUS_MAGAZIN`, `ARTICOL_BON`.
+
+```sql
+SELECT *
+FROM (
+    SELECT
+        pm.id_produs_magazin,
+        pm.denumire AS produs,
+        pm.categorie,
+        SUM(ab.cantitate) AS cantitate_totala_vanduta,
+        ROUND(SUM(ab.cantitate * ab.pret_unitar), 2) AS valoare_totala_vanzari
+    FROM produs_magazin pm
+    JOIN articol_bon ab
+        ON ab.id_produs_magazin = pm.id_produs_magazin
+    GROUP BY
+        pm.id_produs_magazin,
+        pm.denumire,
+        pm.categorie
+    ORDER BY
+        valoare_totala_vanzari DESC
+)
+WHERE ROWNUM <= 3;
+```
+
+### Rezultat
+
+![Rezultat cerința 15 #3](resurse/screenshots/15_outer_division_topn_3.png)
