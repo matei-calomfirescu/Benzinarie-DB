@@ -480,3 +480,543 @@ APROVIZIONARE(#id_aprovizionare, id_furnizor, data_aprovizionare, observatii)
 ARTICOL_APROV_PRODUS(#id_aprovizionare, #id_produs_magazin, cantitate, pret_achizitie)
 
 LIVRARE_CARBURANT(#id_livrare_carburant, id_statie, id_furnizor, id_tip_carburant, data_livrare, cantitate_litri, pret_litru)
+
+
+## 9. Realizarea normalizării până la forma normală 3 (FN1-FN3)
+
+Diagrama conceptuală proiectată la punctul 7 este deja adusă în forma normală 3.
+
+### 9.1. Exemplu de relație care nu este în FN1
+
+Considerăm relația:
+
+**BON_FISCAL_NFN1**(id_bon, id_client, nume_client, prenume_client, data_bon, metoda_plata, produse_cumparate)
+
+Atributul `produse_cumparate` poate conține mai multe valori în aceeași celulă, de exemplu:
+
+`Apa plata x 2, Cafea x 1, Odorizant auto x 1`
+
+Prin urmare, atributul `produse_cumparate` este atribut multiplu, iar relația **BON_FISCAL_NFN1** nu este în FN1.
+
+#### Aducerea în FN1
+
+Lista de produse de pe bon se separă într-o relație asociativă între bonul fiscal și produsul din magazin:
+
+**CLIENT**(#id_client, nume, prenume, telefon)
+
+**BON_FISCAL**(#id_bon, id_client, data_bon, metoda_plata)
+
+**PRODUS_MAGAZIN**(#id_produs_magazin, denumire, categorie, pret, stoc)
+
+**ARTICOL_BON**(#id_bon, #id_produs_magazin, cantitate, pret_unitar)
+
+După descompunere, produsele de pe bon nu mai sunt memorate într-un singur atribut cu valori multiple, ci fiecare produs cumpărat apare ca o înregistrare separată în tabela **ARTICOL_BON**.
+
+Descompunerea este fără pierdere de informație, deoarece:
+
+- `id_client` din **BON_FISCAL** face legătura cu tabela **CLIENT**;
+- `id_bon` din **ARTICOL_BON** face legătura cu tabela **BON_FISCAL**;
+- `id_produs_magazin` din **ARTICOL_BON** face legătura cu tabela **PRODUS_MAGAZIN**.
+
+---
+
+### 9.2. Exemplu de relație care nu este în FN2
+
+Considerăm relația:
+
+**ARTICOL_BON_EXTINS**(id_bon, id_client, data_bon, metoda_plata, id_produs_magazin, denumire_produs, categorie_produs, pret_produs, cantitate, pret_unitar)
+
+Cheia acestei relații este compusă:
+
+`(id_bon, id_produs_magazin)`
+
+Această cheie identifică unic un produs vândut pe un anumit bon fiscal.
+
+#### Dependențe funcționale
+
+F = {
+- (id_bon, id_produs_magazin) → (cantitate, pret_unitar)
+- id_bon → (id_client, data_bon, metoda_plata)
+- id_produs_magazin → (denumire_produs, categorie_produs, pret_produs)
+  }
+
+Relația este în FN1, deoarece toate atributele sunt atomice.
+
+Totuși, relația nu este în FN2, deoarece există dependențe parțiale față de cheia compusă:
+
+- `id_bon` determină `id_client`, `data_bon`, `metoda_plata`;
+- `id_produs_magazin` determină `denumire_produs`, `categorie_produs`, `pret_produs`.
+
+Aceste atribute nu depind de întreaga cheie `(id_bon, id_produs_magazin)`, ci doar de o parte a acesteia.
+
+#### Aducerea în FN2
+
+Pentru eliminarea dependențelor parțiale, descompunem relația în astfel:
+
+**BON_FISCAL**(#id_bon, id_client, data_bon, metoda_plata)
+
+**PRODUS_MAGAZIN**(#id_produs_magazin, denumire, categorie, pret, stoc)
+
+**ARTICOL_BON**(#id_bon, #id_produs_magazin, cantitate, pret_unitar)
+
+În noua structură:
+
+- datele despre bon sunt memorate o singură dată în **BON_FISCAL**;
+- datele despre produs sunt memorate o singură dată în **PRODUS_MAGAZIN**;
+- tabela **ARTICOL_BON** reține doar informațiile specifice apariției unui produs pe un bon: cantitatea și prețul unitar de la momentul vânzării.
+
+---
+
+### 9.3. Exemplu de relație care nu este în FN3
+
+Considerăm relația:
+
+**LIVRARE_CARBURANT_EXTINSA**(id_livrare_carburant, id_statie, denumire_statie, adresa_statie, oras_statie, id_furnizor, denumire_furnizor, telefon_furnizor, email_furnizor, id_tip_carburant, denumire_carburant, pret_litru_curent, data_livrare, cantitate_litri, pret_litru_livrare)
+
+Cheia primară este `id_livrare_carburant`.
+
+#### Dependențe funcționale
+
+F = {
+
+- id_livrare_carburant → (id_statie, id_furnizor, id_tip_carburant, data_livrare, cantitate_litri, pret_litru_livrare)
+- id_statie → (denumire_statie, adresa_statie, oras_statie)
+- id_furnizor → (denumire_furnizor, telefon_furnizor, email_furnizor)
+- id_tip_carburant → (denumire_carburant, pret_litru_curent)
+
+}
+
+Relația este în FN1, deoarece toate atributele sunt atomice.
+
+Relația este și în FN2, deoarece cheia este formată dintr-un singur atribut, deci nu pot exista dependențe parțiale față de o cheie compusă.
+
+Totuși, relația nu este în FN3, deoarece există dependențe tranzitive. De exemplu:
+
+id_livrare_carburant → id_furnizor → (denumire_furnizor, telefon_furnizor, email_furnizor)
+
+id_livrare_carburant → id_statie → (denumire_statie, adresa_statie, oras_statie)
+
+id_livrare_carburant → id_tip_carburant → (denumire_carburant, pret_litru_curent)
+
+Atributele `denumire_furnizor`, `telefon_furnizor`, `email_furnizor`, `denumire_statie`, `adresa_statie`, `oras_statie`, `denumire_carburant` și `pret_litru_curent` nu depind direct de cheia primară a livrării, ci depind de alte atribute non-cheie.
+
+#### Aducerea în FN3
+
+Pentru eliminarea dependențelor tranzitive, descompunem relția astfel:
+
+**STATIE**(#id_statie, denumire, adresa, oras, telefon)
+
+**FURNIZOR**(#id_furnizor, denumire, telefon, email)
+
+**TIP_CARBURANT**(#id_tip_carburant, denumire, pret_litru)
+
+**LIVRARE_CARBURANT**(#id_livrare_carburant, id_statie, id_furnizor, id_tip_carburant, data_livrare, cantitate_litri, pret_litru)
+
+În noua structură:
+
+- datele despre stație sunt memorate în **STATIE**;
+- datele despre furnizor sunt memorate în **FURNIZOR**;
+- datele despre tipul de carburant sunt memorate în **TIP_CARBURANT**;
+- tabela **LIVRARE_CARBURANT** reține doar datele specifice unei livrări: stația care primește carburantul, furnizorul, tipul de carburant, data livrării, cantitatea livrată și prețul pe litru la momentul livrării.
+
+---
+
+## 10. Crearea unei secvențe ce va fi utilizată în inserarea înregistrărilor în tabele (punctul 11)
+
+```sql
+CREATE SEQUENCE seq_statie START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_tip_carburant START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_pompa START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_pistol_pompa START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_client START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_angajat START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_tura START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_bon_fiscal START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_alimentare START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_produs_magazin START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_furnizor START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_aprovizionare START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_livrare_carburant START WITH 1 INCREMENT BY 1;
+```
+
+## 11. Crearea tabelelor în SQL și inserarea de date coerente în fiecare dintre acestea
+
+Crearea tabelelor și inserarea datelor se face în fișierul [11_creare_tabele.sql](11_creare_tabele.sql).
+
+## 12. Formulați în limbaj natural și implementați 5 cereri SQL complexe
+
+### Cererea 1
+
+Să se afișeze alimentările a căror cantitate de carburant este mai mare sau egală
+cu media cantităților alimentate pentru același tip de carburant, în aceeași
+stație.
+
+**Elemente utilizate:**
+
+* subcerere sincronizată;
+* în subcererea sincronizată intervin cel puțin 3 tabele: `ALIMENTARE`, `PISTOL_POMPA`, `POMPA`, `TIP_CARBURANT`;
+* join-uri între tabelele principale ale fluxului de alimentare;
+* ordonare.
+
+```sql
+SELECT
+    c.id_client,
+    c.nume || ' ' || c.prenume AS client,
+    bf.id_bon,
+    s.denumire AS statie,
+    p.numar_pompa,
+    tc.denumire AS carburant,
+    a.cantitate_litri,
+    a.pret_litru,
+    ROUND(a.cantitate_litri * a.pret_litru, 2) AS valoare_alimentare
+FROM client c
+JOIN bon_fiscal bf
+    ON bf.id_client = c.id_client
+JOIN alimentare a
+    ON a.id_bon = bf.id_bon
+JOIN pistol_pompa pp
+    ON pp.id_pistol_pompa = a.id_pistol_pompa
+JOIN pompa p
+    ON p.id_pompa = pp.id_pompa
+JOIN statie s
+    ON s.id_statie = p.id_statie
+JOIN tip_carburant tc
+    ON tc.id_tip_carburant = pp.id_tip_carburant
+WHERE a.cantitate_litri >= (
+    SELECT AVG(a2.cantitate_litri)
+    FROM alimentare a2
+    JOIN pistol_pompa pp2
+        ON pp2.id_pistol_pompa = a2.id_pistol_pompa
+    JOIN pompa p2
+        ON p2.id_pompa = pp2.id_pompa
+    JOIN tip_carburant tc2
+        ON tc2.id_tip_carburant = pp2.id_tip_carburant
+    WHERE p2.id_statie = p.id_statie
+      AND tc2.id_tip_carburant = tc.id_tip_carburant
+)
+ORDER BY
+    s.denumire,
+    tc.denumire,
+    a.cantitate_litri DESC;
+```
+
+---
+
+### Cererea 2
+
+Să se afișeze, pentru fiecare client, numărul de bonuri, valoarea totală a
+alimentărilor, valoarea totală a produselor cumpărate și valoarea totală
+generală. Pentru clienții fără anumite valori se va afișa 0. Statusul clientului
+se va determina folosind `DECODE`.
+
+**Elemente utilizate:**
+
+* subcereri nesincronizate în clauza `FROM`;
+* `NVL`;
+* `DECODE`;
+* funcții grup;
+* ordonare.
+
+```sql
+SELECT
+    c.id_client,
+    INITCAP(c.nume || ' ' || c.prenume) AS client,
+    COUNT(bf.id_bon) AS nr_bonuri,
+    NVL(SUM(va.valoare_alimentare), 0) AS total_carburant,
+    NVL(SUM(vp.valoare_produse), 0) AS total_produse,
+    NVL(SUM(va.valoare_alimentare), 0)
+        + NVL(SUM(vp.valoare_produse), 0) AS total_general,
+    DECODE(
+        COUNT(bf.id_bon),
+        0, 'fara bonuri',
+        DECODE(
+            SIGN(NVL(SUM(va.valoare_alimentare), 0)),
+            0, 'doar produse magazin',
+            'are alimentari'
+        )
+    ) AS status_client
+FROM client c
+LEFT JOIN bon_fiscal bf
+    ON bf.id_client = c.id_client
+LEFT JOIN (
+    SELECT
+        id_bon,
+        SUM(cantitate_litri * pret_litru) AS valoare_alimentare
+    FROM alimentare
+    GROUP BY id_bon
+) va
+    ON va.id_bon = bf.id_bon
+LEFT JOIN (
+    SELECT
+        id_bon,
+        SUM(cantitate * pret_unitar) AS valoare_produse
+    FROM articol_bon
+    GROUP BY id_bon
+) vp
+    ON vp.id_bon = bf.id_bon
+GROUP BY
+    c.id_client,
+    c.nume,
+    c.prenume
+ORDER BY
+    total_general DESC,
+    client ASC;
+```
+
+---
+
+### Cererea 3
+
+Să se afișeze categoriile de produse din magazin pentru care valoarea totală a
+vânzărilor este mai mare sau egală cu media valorilor totale ale vânzărilor pe
+categorii.
+
+**Elemente utilizate:**
+
+* grupări de date;
+* funcții grup: `COUNT`, `SUM`, `AVG`;
+* filtrare la nivel de grupuri cu `HAVING`;
+* subcerere nesincronizată în clauza `HAVING`;
+* ordonare.
+
+```sql
+SELECT
+    NVL(pm.categorie, 'necunoscuta') AS categorie_produs,
+    COUNT(DISTINCT pm.id_produs_magazin) AS nr_produse_vandute,
+    COUNT(DISTINCT ab.id_bon) AS nr_bonuri,
+    SUM(ab.cantitate) AS cantitate_totala,
+    ROUND(SUM(ab.cantitate * ab.pret_unitar), 2) AS valoare_totala,
+    ROUND(AVG(ab.pret_unitar), 2) AS pret_mediu_vanzare
+FROM produs_magazin pm
+JOIN articol_bon ab
+    ON ab.id_produs_magazin = pm.id_produs_magazin
+GROUP BY
+    NVL(pm.categorie, 'necunoscuta')
+HAVING SUM(ab.cantitate * ab.pret_unitar) >= (
+    SELECT AVG(valoare_categorie)
+    FROM (
+        SELECT
+            SUM(ab2.cantitate * ab2.pret_unitar) AS valoare_categorie
+        FROM produs_magazin pm2
+        JOIN articol_bon ab2
+            ON ab2.id_produs_magazin = pm2.id_produs_magazin
+        GROUP BY
+            NVL(pm2.categorie, 'necunoscuta')
+    )
+)
+ORDER BY
+    valoare_totala DESC;
+```
+
+---
+
+### Cererea 4
+
+Să se afișeze bonurile fiscale împreună cu numele clientului formatat, informații
+despre data emiterii bonului și tipul bonului: bon doar cu alimentare, bon doar
+cu produse din magazin sau bon mixt.
+
+**Elemente utilizate:**
+
+* funcții pe șiruri de caractere: `UPPER`, `INITCAP`, `SUBSTR`;
+* funcții pe date calendaristice: `TRUNC`, `TO_CHAR`, `EXTRACT`, `MONTHS_BETWEEN`;
+* expresie `CASE`;
+* subcereri sincronizate cu `EXISTS`;
+* ordonare.
+
+```sql
+SELECT
+    bf.id_bon,
+    UPPER(c.nume) || ' ' || INITCAP(c.prenume) AS client_formatat,
+    SUBSTR(NVL(c.telefon, 'fara telefon'), 1, 10) AS telefon_scurt,
+    bf.metoda_plata,
+    TRUNC(bf.data_bon) AS data_calendaristica,
+    TO_CHAR(bf.data_bon, 'FMDay', 'NLS_DATE_LANGUAGE=ROMANIAN') AS zi_saptamana,
+    EXTRACT(MONTH FROM bf.data_bon) AS luna_bon,
+    ROUND(MONTHS_BETWEEN(SYSDATE, bf.data_bon), 2) AS vechime_luni,
+    CASE
+        WHEN EXISTS (
+            SELECT 1
+            FROM alimentare a
+            WHERE a.id_bon = bf.id_bon
+        )
+        AND EXISTS (
+            SELECT 1
+            FROM articol_bon ab
+            WHERE ab.id_bon = bf.id_bon
+        )
+            THEN 'bon mixt: carburant si produse'
+        WHEN EXISTS (
+            SELECT 1
+            FROM alimentare a
+            WHERE a.id_bon = bf.id_bon
+        )
+            THEN 'bon doar cu alimentare'
+        WHEN EXISTS (
+            SELECT 1
+            FROM articol_bon ab
+            WHERE ab.id_bon = bf.id_bon
+        )
+            THEN 'bon doar cu produse'
+        ELSE 'bon fara detalii'
+    END AS tip_bon
+FROM bon_fiscal bf
+JOIN client c
+    ON c.id_client = bf.id_client
+ORDER BY
+    TRUNC(bf.data_bon) DESC,
+    UPPER(c.nume),
+    INITCAP(c.prenume);
+```
+
+---
+
+### Cererea 5
+
+Să se afișeze, pentru fiecare stație și fiecare tip de carburant care are
+activitate, cantitatea totală livrată, cantitatea totală vândută, cantitatea
+estimată rămasă și profitul brut estimativ.
+
+**Elemente utilizate:**
+
+* clauza `WITH`;
+* două blocuri de cerere: `vanzari_carburant` și `livrari_carburant`;
+* join-uri;
+* `NVL`;
+* expresie `CASE`;
+* funcții grup;
+* ordonare.
+
+```sql
+WITH vanzari_carburant AS (
+    SELECT
+        p.id_statie,
+        pp.id_tip_carburant,
+        SUM(a.cantitate_litri) AS litri_vanduti,
+        SUM(a.cantitate_litri * a.pret_litru) AS valoare_vanzari
+    FROM alimentare a
+    JOIN pistol_pompa pp
+        ON pp.id_pistol_pompa = a.id_pistol_pompa
+    JOIN pompa p
+        ON p.id_pompa = pp.id_pompa
+    GROUP BY
+        p.id_statie,
+        pp.id_tip_carburant
+),
+livrari_carburant AS (
+    SELECT
+        id_statie,
+        id_tip_carburant,
+        SUM(cantitate_litri) AS litri_livrati,
+        SUM(cantitate_litri * pret_litru) AS cost_livrari
+    FROM livrare_carburant
+    GROUP BY
+        id_statie,
+        id_tip_carburant
+)
+SELECT
+    s.denumire AS statie,
+    tc.denumire AS carburant,
+    NVL(lc.litri_livrati, 0) AS litri_livrati,
+    NVL(vc.litri_vanduti, 0) AS litri_vanduti,
+    NVL(lc.litri_livrati, 0) - NVL(vc.litri_vanduti, 0) AS litri_ramasi_estimati,
+    ROUND(NVL(vc.valoare_vanzari, 0) - NVL(lc.cost_livrari, 0), 2) AS profit_brut_estimativ,
+    CASE
+        WHEN NVL(lc.litri_livrati, 0) = 0
+            THEN 'nu exista livrari'
+        WHEN NVL(lc.litri_livrati, 0) - NVL(vc.litri_vanduti, 0) < 0
+            THEN 'vanzari peste livrari'
+        WHEN NVL(lc.litri_livrati, 0) - NVL(vc.litri_vanduti, 0) <= 1000
+            THEN 'stoc estimat redus'
+        ELSE 'stoc estimat suficient'
+    END AS situatie_carburant
+FROM statie s
+CROSS JOIN tip_carburant tc
+LEFT JOIN vanzari_carburant vc
+    ON vc.id_statie = s.id_statie
+   AND vc.id_tip_carburant = tc.id_tip_carburant
+LEFT JOIN livrari_carburant lc
+    ON lc.id_statie = s.id_statie
+   AND lc.id_tip_carburant = tc.id_tip_carburant
+WHERE NVL(lc.litri_livrati, 0) > 0
+   OR NVL(vc.litri_vanduti, 0) > 0
+ORDER BY
+    s.denumire,
+    tc.denumire;
+```
+
+## 13. Implementarea a 3 operații de actualizare și de suprimare a datelor utilizând subcereri
+
+### Operația 1 — Actualizarea prețului curent al carburanților
+
+Să se actualizeze prețul curent al fiecărui tip de carburant care a fost
+livrat cel puțin o dată. Noul preț se calculează ca media prețurilor de 
+livrare pentru acel carburant, la care se adaugă un adaos comercial de 
+15%.
+
+```sql
+UPDATE tip_carburant tc
+SET tc.pret_litru = (
+    SELECT ROUND(AVG(lc.pret_litru) * 1.15, 2)
+    FROM livrare_carburant lc
+    WHERE lc.id_tip_carburant = tc.id_tip_carburant
+)
+WHERE tc.id_tip_carburant IN (
+    SELECT DISTINCT lc2.id_tip_carburant
+    FROM livrare_carburant lc2
+);
+```
+
+---
+
+### Operația 2 — Trecerea în revizie a pompelor foarte utilizate
+
+Să se treacă în starea `revizie` pompele funcționale pentru care cantitatea totală de carburant vândută este mai mare decât media cantităților totale vândute pe pompă.
+
+```sql
+UPDATE pompa p
+SET p.stare = 'revizie'
+WHERE p.stare = 'functionala'
+  AND p.id_pompa IN (
+    SELECT pp.id_pompa
+    FROM pistol_pompa pp
+    JOIN alimentare a
+        ON a.id_pistol_pompa = pp.id_pistol_pompa
+    GROUP BY pp.id_pompa
+    HAVING SUM(a.cantitate_litri) > (
+        SELECT AVG(total_litri_pompa)
+        FROM (
+            SELECT
+                pp2.id_pompa,
+                SUM(a2.cantitate_litri) AS total_litri_pompa
+            FROM pistol_pompa pp2
+            JOIN alimentare a2
+                ON a2.id_pistol_pompa = pp2.id_pistol_pompa
+            GROUP BY pp2.id_pompa
+        )
+    )
+);
+```
+
+---
+
+### Operația 3 — Ștergerea programărilor vechi ale angajaților cu salariu sub medie
+
+Să se șteargă programările mai vechi decât cea mai recentă programare 
+existentă în tabel, dar numai pentru angajații care au salariul mai mic decât salariul mediu al tuturor angajaților.
+
+```sql
+DELETE FROM programare_tura pt
+WHERE pt.data_programare < (
+    SELECT MAX(pt2.data_programare)
+    FROM programare_tura pt2
+)
+AND pt.id_angajat IN (
+    SELECT a.id_angajat
+    FROM angajat a
+    WHERE a.salariu < (
+        SELECT AVG(a2.salariu)
+        FROM angajat a2
+    )
+);
+```
